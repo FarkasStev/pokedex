@@ -4,12 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/farkasstev/pokedex/internal/pokeapi"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := getCommandRegistry()
-	configuration := config{}
+	configuration := config{
+		Client: pokeapi.NewClient(5 * time.Second),
+	}
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()

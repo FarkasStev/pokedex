@@ -5,7 +5,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/farkasstev/pokedex/internal/pokecache"
 )
+
+type Client struct {
+	cache pokecache.Cache
+}
+
+func NewClient(cacheInterval time.Duration) Client {
+	return Client{
+		cache: *pokecache.NewCache(cacheInterval),
+	}
+}
 
 type LocationArea struct {
 	Id                   int                   `json:"id"`
@@ -58,24 +71,32 @@ type NamedAPIResourceList struct {
 	Results  []NamedAPIResource `json:"results"`
 }
 
-func GetLocationArea(url string) (NamedAPIResourceList, error) {
-	res, err := http.Get(url)
-	if err != nil {
-		return NamedAPIResourceList{}, err
-	}
-	body, err := io.ReadAll(res.Body)
+func (c *Client) GetLocationArea(url string) (NamedAPIResourceList, error) {
+	bytes, present := c.cache.Get(url)
+	if !present {
+		res, err := http.Get(url)
+		if err != nil {
+			return NamedAPIResourceList{}, err
+		}
 
-	defer res.Body.Close()
+		bytes, err = io.ReadAll(res.Body)
 
-	if res.StatusCode > 299 {
-		return NamedAPIResourceList{}, fmt.Errorf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
-	if err != nil {
-		return NamedAPIResourceList{}, fmt.Errorf("Response failed with error: %v", err)
+		defer res.Body.Close()
+
+		if res.StatusCode > 299 {
+			return NamedAPIResourceList{}, fmt.Errorf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, bytes)
+		}
+		if err != nil {
+			return NamedAPIResourceList{}, fmt.Errorf("Response failed with error: %v", err)
+		}
+		c.cache.Add(url, bytes)
+		fmt.Printf("retrieved bytes: %s", bytes)
+	} else {
+		fmt.Printf("cached bytes: %s", bytes)
 	}
 
 	namedAPIResources := NamedAPIResourceList{}
-	err = json.Unmarshal(body, &namedAPIResources)
+	err := json.Unmarshal(bytes, &namedAPIResources)
 	if err != nil {
 		return NamedAPIResourceList{}, err
 	}

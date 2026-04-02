@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	pokeapi "github.com/farkasstev/pokedex/internal"
+	pokeapi "github.com/farkasstev/pokedex/internal/pokeapi"
 )
 
 func cleanInput(text string) []string {
@@ -29,6 +29,7 @@ type cliCommand struct {
 type config struct {
 	Next     string
 	Previous string
+	Client   pokeapi.Client
 }
 
 func getCommandRegistry() map[string]cliCommand {
@@ -96,7 +97,7 @@ func commandMapb(configuration *config) error {
 }
 
 func executeMap(url string, configuration *config) error {
-	res, err := pokeapi.GetLocationArea(url)
+	res, err := configuration.Client.GetLocationArea(url)
 	if err != nil {
 		return err
 	}
