@@ -23,7 +23,7 @@ func main() {
 		if !exists {
 			fmt.Println("Unknown command")
 		} else {
-			if err := command.callback(&configuration); err != nil {
+			if err := command.callback(&configuration, input[1:]); err != nil {
 				fmt.Printf("Encountered Error: %v\n", err)
 			}
 		}

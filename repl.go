@@ -23,7 +23,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 type config struct {
@@ -54,16 +54,21 @@ func getCommandRegistry() map[string]cliCommand {
 			description: "Displays the names of 20 location areas in Pokemon world. Each subsequent call will display the previous 20",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays a list of all the Pokémon located in an area. Takes the name of a location area as an argument.",
+			callback:    explore,
+		},
 	}
 }
 
-func commandExit(configuration *config) error {
+func commandExit(configuration *config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(configuration *config) error {
+func commandHelp(configuration *config, args []string) error {
 	fmt.Print(`Welcome to the Pokedex!
 Usage:
 
@@ -75,7 +80,7 @@ Usage:
 	return nil
 }
 
-func commandMap(configuration *config) error {
+func commandMap(configuration *config, args []string) error {
 
 	url := "https://pokeapi.co/api/v2/location-area/"
 
@@ -85,7 +90,7 @@ func commandMap(configuration *config) error {
 	return executeMap(url, configuration)
 }
 
-func commandMapb(configuration *config) error {
+func commandMapb(configuration *config, args []string) error {
 
 	url := "https://pokeapi.co/api/v2/location-area/"
 
@@ -97,7 +102,7 @@ func commandMapb(configuration *config) error {
 }
 
 func executeMap(url string, configuration *config) error {
-	res, err := configuration.Client.GetLocationArea(url)
+	res, err := configuration.Client.GetLocationAreas(url)
 	if err != nil {
 		return err
 	}
@@ -108,6 +113,20 @@ func executeMap(url string, configuration *config) error {
 
 	for i := range results {
 		fmt.Println(results[i].Name)
+	}
+
+	return nil
+}
+
+func explore(configuration *config, args []string) error {
+	res, err := configuration.Client.GetLocationArea(args[0])
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Exploring %v...\n", args[0])
+	for i := range res.PokemonEncounters {
+		fmt.Printf(" - %v\n", res.PokemonEncounters[i].Pokemon.Name)
 	}
 
 	return nil
