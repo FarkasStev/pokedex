@@ -13,7 +13,8 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := getCommandRegistry()
 	configuration := config{
-		Client: pokeapi.NewClient(5 * time.Second),
+		Client:  pokeapi.NewClient(5 * time.Second),
+		Pokedex: make(map[string]pokeapi.PokemonInfo),
 	}
 	for {
 		fmt.Print("Pokedex > ")

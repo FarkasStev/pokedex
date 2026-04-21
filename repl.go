@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -30,6 +31,7 @@ type config struct {
 	Next     string
 	Previous string
 	Client   pokeapi.Client
+	Pokedex  map[string]pokeapi.PokemonInfo
 }
 
 func getCommandRegistry() map[string]cliCommand {
@@ -58,6 +60,11 @@ func getCommandRegistry() map[string]cliCommand {
 			name:        "explore",
 			description: "Displays a list of all the Pokémon located in an area. Takes the name of a location area as an argument.",
 			callback:    explore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "It takes the name of a Pokemon as an argument and adds them to the users Pokedex",
+			callback:    catch,
 		},
 	}
 }
@@ -129,5 +136,24 @@ func explore(configuration *config, args []string) error {
 		fmt.Printf(" - %v\n", res.PokemonEncounters[i].Pokemon.Name)
 	}
 
+	return nil
+}
+
+func catch(configuration *config, args []string) error {
+	name := args[0]
+	fmt.Printf("Throwing a Pokeball at %v...\n", name)
+	res, err := configuration.Client.GetPokemonInfo(name)
+	if err != nil {
+		return err
+	}
+	catchNum := (100.0 / float64(res.BaseExperience)) * rand.Float64()
+	caught := catchNum > .50
+	if caught {
+		fmt.Printf("%v was caught!\n", name)
+		//add to pokedex
+		configuration.Pokedex[name] = res
+	} else {
+		fmt.Printf("%v escaped!\n", name)
+	}
 	return nil
 }
