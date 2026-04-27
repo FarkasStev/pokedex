@@ -68,8 +68,13 @@ func getCommandRegistry() map[string]cliCommand {
 		},
 		"inspect": {
 			name:        "inspect",
-			description: "Prints the name, height m wightm statsm and tyupe of a pokemon in the pokedex. Takes the name of a Pokemon as an argument.",
+			description: "Prints the name, height weight stats and type(s) of a pokemon in the pokedex. Takes the name of a Pokemon as an argument.",
 			callback:    inspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Prints a list of all the names of the pokemon the user has caught.",
+			callback:    pokedex,
 		},
 	}
 }
@@ -182,5 +187,15 @@ func inspect(configuration *config, args []string) error {
 	for _, poketype := range pokemon.Types {
 		fmt.Printf("  - %v\n", poketype.Type.Name)
 	}
+	return nil
+}
+
+func pokedex(configuration *config, args []string) error {
+
+	fmt.Printf("Your Pokedex:\n")
+	for _, value := range configuration.Pokedex {
+		fmt.Printf(" - %v\n", value.Name)
+	}
+
 	return nil
 }
