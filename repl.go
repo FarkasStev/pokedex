@@ -48,12 +48,12 @@ func getCommandRegistry() map[string]cliCommand {
 		},
 		"map": {
 			name:        "map",
-			description: "Displays the names of 20 location areas in Pokemon world. Each subsequent call will display the next 20",
+			description: "Displays the names of 20 location areas in Pokemon world. Each subsequent call will display the next 20.",
 			callback:    commandMap,
 		},
 		"mapb": {
 			name:        "mapb",
-			description: "Displays the names of 20 location areas in Pokemon world. Each subsequent call will display the previous 20",
+			description: "Displays the names of 20 location areas in Pokemon world. Each subsequent call will display the previous 20.",
 			callback:    commandMapb,
 		},
 		"explore": {
@@ -63,8 +63,13 @@ func getCommandRegistry() map[string]cliCommand {
 		},
 		"catch": {
 			name:        "catch",
-			description: "It takes the name of a Pokemon as an argument and adds them to the users Pokedex",
+			description: "Adds a Pokemon to the users pokedex. Takes the name of a Pokemon as an argument.",
 			callback:    catch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Prints the name, height m wightm statsm and tyupe of a pokemon in the pokedex. Takes the name of a Pokemon as an argument.",
+			callback:    inspect,
 		},
 	}
 }
@@ -154,6 +159,28 @@ func catch(configuration *config, args []string) error {
 		configuration.Pokedex[name] = res
 	} else {
 		fmt.Printf("%v escaped!\n", name)
+	}
+	return nil
+}
+
+func inspect(configuration *config, args []string) error {
+	name := args[0]
+
+	pokemon, exists := configuration.Pokedex[name]
+	if !exists {
+		fmt.Printf("you have not caugt that pokemon")
+		return nil
+	}
+
+	fmt.Printf("Name: %v\n", pokemon.Name)
+	fmt.Printf("Weight: %v\n", pokemon.Weight)
+	fmt.Printf("Stats:\n")
+	for _, stat := range pokemon.Stats {
+		fmt.Printf("  -%v: %v\n", stat.Stat.Name, stat.BaseStat)
+	}
+	fmt.Printf("Types:\n")
+	for _, poketype := range pokemon.Types {
+		fmt.Printf("  - %v\n", poketype.Type.Name)
 	}
 	return nil
 }
